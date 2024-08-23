@@ -22,6 +22,8 @@ class AuthController extends Controller
             $validateUser = Validator::make($request->all(),
             [
                 'name' => 'required',
+                'no_hp' => 'required',
+                'alamat' => 'required',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required',
             ]);
@@ -34,6 +36,8 @@ class AuthController extends Controller
 
             $user = User::create([
                 'name' => $request->name,
+                'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
                 'email' => $request->email,
                 'password' => $request->password,
             ]);
@@ -88,18 +92,16 @@ class AuthController extends Controller
     public function profile() {
         $user = auth()->user();
 
-        $roles = $user->roles()->get()->map(function($role) {
-            return [
-                'id' => $role->pivot->role_id,
-                'role' => $role->name
-            ];
-        });
+        $role = $user->roles()->first();
 
         $userData = [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'level' => $roles,
+            'level' => $role ? (object)[
+                'id' => $role->pivot->role_id,
+                'role' => $role->name
+            ] : null,
             'email_verified_at' => $user->email_verified_at,
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
